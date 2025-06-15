@@ -41,7 +41,7 @@
 #endif
 #include "i_system.h"
 
-int mb_used = 32;
+int mb_used = 6;
 
 void I_Tactile(int on, int off, int total)
 {

@@ -288,16 +288,19 @@ void Z_FreeTags(int lowtag, int hightag)
 void Z_DumpHeap(int lowtag, int hightag)
 {
     memblock_t* block;
+    int totalSize = 0;
+    int numBlocks = 0;
 
     printf("zone size: %i  location: %p\n", mainzone->size, mainzone);
 
     printf("tag range: %i to %i\n", lowtag, hightag);
-
     for (block = mainzone->blocklist.next;; block = block->next) {
-        if (block->tag >= lowtag && block->tag <= hightag)
-            printf("block:%p    size:%7i    user:%p    tag:%3i\n", block, block->size, block->user,
-                block->tag);
-
+        if (block->tag >= lowtag && block->tag <= hightag) {
+            totalSize += block->size;
+            ++numBlocks;
+            printf("block:%p    size:%7i    user:%p    tag:%3i next: %p\n", block, block->size,
+                block->user, block->tag, block->next ? block->next : NULL);
+        }
         if (block->next == &mainzone->blocklist) {
             // all blocks have been hit
             break;
@@ -315,6 +318,7 @@ void Z_DumpHeap(int lowtag, int hightag)
             printf("ERROR: two consecutive free blocks\n");
         }
     }
+    printf("Total size of blocks in range: %i and %i blocks\n", totalSize, numBlocks);
 }
 
 //

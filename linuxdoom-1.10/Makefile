@@ -6,7 +6,7 @@
 #
 CC=  gcc  # gcc or g++
 
-CFLAGS=-ggdb3 -O0 -Wall -DNORMALUNIX -DLINUX # -DUSEASM 
+CFLAGS=-ggdb3 -O0 -m32 -Wall -DNORMALUNIX -DLINUX # -DUSEASM 
 LDFLAGS=-L/usr/X11R6/lib
 LIBS=-lXext -lX11 -lnsl -lm
 
