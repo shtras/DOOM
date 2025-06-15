@@ -14,6 +14,7 @@ struct color_t
 };
 
 struct color_t colors[256];
+byte expandedScreen[SCREENWIDTH * SCREENHEIGHT * 4];
 
 void I_SDL_InitGraphics(void)
 {
@@ -23,7 +24,7 @@ void I_SDL_InitGraphics(void)
     }
 
     window = SDL_CreateWindow(
-        "Hello SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREENWIDTH, SCREENHEIGHT, 0);
+        "Hello SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREENWIDTH * 2, SCREENHEIGHT * 2, 0);
     if (window == NULL) {
         printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
         return;
@@ -263,13 +264,54 @@ void I_SDL_UpdateNoBlit(void)
 {
 }
 
+void Expand2(void)
+{
+    unsigned int* olineptrs[2];
+        unsigned int* ilineptr;
+        int x, y, i;
+        unsigned int twoopixels;
+        unsigned int twomoreopixels;
+        unsigned int fouripixels;
+
+        ilineptr = (unsigned int*)(screens[0]);
+        for (i = 0; i < 2; i++) {
+            olineptrs[i] = (unsigned int*)&expandedScreen[i * SCREENWIDTH * 2];
+        }
+
+        y = SCREENHEIGHT;
+        while (y--) {
+            x = SCREENWIDTH;
+            do {
+                fouripixels = *ilineptr++;
+                twoopixels = (fouripixels & 0xff000000) | ((fouripixels >> 8) & 0xffff00) |
+                             ((fouripixels >> 16) & 0xff);
+                twomoreopixels = ((fouripixels << 16) & 0xff000000) |
+                                 ((fouripixels << 8) & 0xffff00) | (fouripixels & 0xff);
+#ifdef __BIG_ENDIAN__
+                *olineptrs[0]++ = twoopixels;
+                *olineptrs[1]++ = twoopixels;
+                *olineptrs[0]++ = twomoreopixels;
+                *olineptrs[1]++ = twomoreopixels;
+#else
+                *olineptrs[0]++ = twomoreopixels;
+                *olineptrs[1]++ = twomoreopixels;
+                *olineptrs[0]++ = twoopixels;
+                *olineptrs[1]++ = twoopixels;
+#endif
+            } while (x -= 4);
+            olineptrs[0] += SCREENWIDTH / 2;
+            olineptrs[1] += SCREENWIDTH / 2;
+        }
+}
+
 void I_SDL_FinishUpdate(void)
 {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
-    for (int x = 0; x < SCREENWIDTH; x++) {
-        for (int y = 0; y < SCREENHEIGHT; y++) {
-            byte pixel = screens[0][y * SCREENWIDTH + x];
+    Expand2();
+    for (int x = 0; x < SCREENWIDTH * 2; x++) {
+        for (int y = 0; y < SCREENHEIGHT * 2; y++) {
+            byte pixel = expandedScreen[y * SCREENWIDTH * 2 + x];
             SDL_SetRenderDrawColor(
                 renderer, colors[pixel].r, colors[pixel].g, colors[pixel].b, colors[pixel].a);
             SDL_RenderDrawPoint(renderer, x, y);
