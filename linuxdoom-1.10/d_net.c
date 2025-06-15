@@ -383,6 +383,7 @@ void NetUpdate(void)
     gameticdiv = gametic / ticdup;
     for (i = 0; i < newtics; i++) {
         // I_StartTic(); // TODO: Reimplement
+        I_SDL_StartTic();
         D_ProcessEvents();
         if (maketic - gameticdiv >= BACKUPTICS / 2 - 1) {
             break; // can't hold any more
@@ -436,9 +437,11 @@ void CheckAbort(void)
     stoptic = I_GetTime() + 2;
     while (I_GetTime() < stoptic) {
         // I_StartTic(); // TODO: Reimplement
+        I_SDL_StartTic();
     }
 
     // I_StartTic(); // TODO: Reimplement
+    I_SDL_StartTic();
     for (; eventtail != eventhead; eventtail = (++eventtail) & (MAXEVENTS - 1)) {
         ev = &events[eventtail];
         if (ev->type == ev_keydown && ev->data1 == KEY_ESCAPE) {

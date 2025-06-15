@@ -258,7 +258,7 @@ void D_Display(void)
     // clean up border stuff
     if (gamestate != oldgamestate && gamestate != GS_LEVEL) {
         // I_SetPalette(W_CacheLumpName("PLAYPAL", PU_CACHE)); // TODO: Reimplement
-        SDL_SetPalette(W_CacheLumpName("PLAYPAL", PU_CACHE));
+        I_SDL_SetPalette(W_CacheLumpName("PLAYPAL", PU_CACHE));
     }
 
     // see if the border needs to be initially drawn
@@ -301,7 +301,7 @@ void D_Display(void)
     // normal update
     if (!wipe) {
         // I_FinishUpdate(); // page flip or blit buffer // TODO: Reimplement
-        SDL_FinishUpdate();
+        I_SDL_FinishUpdate();
         return;
     }
 
@@ -318,10 +318,10 @@ void D_Display(void)
         wipestart = nowtime;
         done = wipe_ScreenWipe(wipe_Melt, 0, 0, SCREENWIDTH, SCREENHEIGHT, tics);
         // I_UpdateNoBlit(); // TODO: Reimplement
-        SDL_UpdateNoBlit();
+        I_SDL_UpdateNoBlit();
         M_Drawer();       // menu is drawn even on top of wipes
         // I_FinishUpdate(); // page flip or blit buffer // TODO: Reimplement
-        SDL_FinishUpdate();
+        I_SDL_FinishUpdate();
     } while (!done);
 }
 
@@ -344,17 +344,17 @@ void D_DoomLoop(void)
     }
 
     //I_InitGraphics(); // TODO: Reimplement
-    SDL_InitGraphics();
+    I_SDL_InitGraphics();
 
     while (1) {
         // frame syncronous IO operations
         //I_StartFrame(); // TODO: Reimplement
-        SDL_StartFrame();
+        I_SDL_StartFrame();
 
         // process one or more tics
         if (singletics) {
             // I_StartTic(); // TODO: Reimplement
-            SDL_StartTic();
+            I_SDL_StartTic();
             D_ProcessEvents();
             G_BuildTiccmd(&netcmds[consoleplayer][maketic % BACKUPTICS]);
             if (advancedemo) {

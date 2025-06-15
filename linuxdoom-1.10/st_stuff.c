@@ -934,7 +934,7 @@ void ST_doPaletteStuff(void)
         st_palette = palette;
         pal = (byte*)W_CacheLumpNum(lu_palette, PU_CACHE) + palette * 768;
         // I_SetPalette(pal); // TODO: Reimplement
-        SDL_SetPalette(pal);
+        I_SDL_SetPalette(pal);
     }
 }
 
@@ -1247,7 +1247,7 @@ void ST_Stop(void)
     }
 
     // I_SetPalette(W_CacheLumpNum(lu_palette, PU_CACHE)); // TODO: Reimplement
-    SDL_SetPalette(W_CacheLumpNum(lu_palette, PU_CACHE));
+    I_SDL_SetPalette(W_CacheLumpNum(lu_palette, PU_CACHE));
 
     st_stopped = true;
 }

@@ -54,7 +54,7 @@ int I_GetTime (void);
 // Can call D_PostEvent.
 //
 void I_StartFrame (void);
-void SDL_StartFrame (void);
+void I_SDL_StartFrame (void);
 
 
 //
@@ -63,7 +63,7 @@ void SDL_StartFrame (void);
 // Quick syncronous operations are performed here.
 // Can call D_PostEvent.
 void I_StartTic (void);
-void SDL_StartTic (void);
+void I_SDL_StartTic (void);
 
 // Asynchronous interrupt functions should maintain private queues
 // that are read by the synchronous functions

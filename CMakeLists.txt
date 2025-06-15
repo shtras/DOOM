@@ -14,6 +14,8 @@ linuxdoom-1.10/f_wipe.c    linuxdoom-1.10/info.c      linuxdoom-1.10/p_ceilng.c 
 linuxdoom-1.10/sdl_video.c
 )
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
 find_package(SDL2 REQUIRED)
 
 target_compile_definitions(Doom PRIVATE LINUX NORMALUNIX)
