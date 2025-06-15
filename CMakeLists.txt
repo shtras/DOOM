@@ -9,12 +9,15 @@ linuxdoom-1.10/d_net.c     linuxdoom-1.10/i_main.c    linuxdoom-1.10/m_fixed.c  
 linuxdoom-1.10/doomdef.c   linuxdoom-1.10/i_net.c     linuxdoom-1.10/m_menu.c    linuxdoom-1.10/p_lights.c  linuxdoom-1.10/p_spec.c    linuxdoom-1.10/r_plane.c   linuxdoom-1.10/v_video.c
 linuxdoom-1.10/doomstat.c  linuxdoom-1.10/i_sound.c   linuxdoom-1.10/m_misc.c    linuxdoom-1.10/p_map.c     linuxdoom-1.10/p_switch.c  linuxdoom-1.10/r_segs.c    linuxdoom-1.10/w_wad.c
 linuxdoom-1.10/dstrings.c  linuxdoom-1.10/i_system.c  linuxdoom-1.10/m_random.c  linuxdoom-1.10/p_maputl.c  linuxdoom-1.10/p_telept.c  linuxdoom-1.10/r_sky.c     linuxdoom-1.10/wi_stuff.c
-linuxdoom-1.10/f_finale.c  linuxdoom-1.10/i_video.c   linuxdoom-1.10/m_swap.c    linuxdoom-1.10/p_mobj.c    linuxdoom-1.10/p_tick.c    linuxdoom-1.10/r_things.c  linuxdoom-1.10/z_zone.c
+linuxdoom-1.10/f_finale.c  linuxdoom-1.10/m_swap.c    linuxdoom-1.10/p_mobj.c    linuxdoom-1.10/p_tick.c    linuxdoom-1.10/r_things.c  linuxdoom-1.10/z_zone.c
 linuxdoom-1.10/f_wipe.c    linuxdoom-1.10/info.c      linuxdoom-1.10/p_ceilng.c  linuxdoom-1.10/p_plats.c   linuxdoom-1.10/p_user.c    linuxdoom-1.10/s_sound.c
+linuxdoom-1.10/sdl_video.c
 )
+
+find_package(SDL2 REQUIRED)
 
 target_compile_definitions(Doom PRIVATE LINUX NORMALUNIX)
 
 target_include_directories(Doom PRIVATE linuxdoom-1.10)
 
-target_link_libraries(Doom PRIVATE Xext X11 m)
+target_link_libraries(Doom PRIVATE m SDL2::SDL2)

@@ -22,7 +22,7 @@
 //-----------------------------------------------------------------------------
 
 #include "z_zone.h"
-#include "i_video.h"
+// #include "i_video.h"
 #include "v_video.h"
 #include "m_random.h"
 
@@ -194,14 +194,14 @@ int wipe_exitMelt(int width, int height, int ticks)
 int wipe_StartScreen(int x, int y, int width, int height)
 {
     wipe_scr_start = screens[2];
-    I_ReadScreen(wipe_scr_start);
+    // I_ReadScreen(wipe_scr_start); // TODO: Reimplement
     return 0;
 }
 
 int wipe_EndScreen(int x, int y, int width, int height)
 {
     wipe_scr_end = screens[3];
-    I_ReadScreen(wipe_scr_end);
+    // I_ReadScreen(wipe_scr_end); // TODO: Reimplement
     V_DrawBlock(x, y, 0, width, height, wipe_scr_start); // restore start scr.
     return 0;
 }

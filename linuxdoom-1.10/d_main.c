@@ -56,7 +56,8 @@
 
 #include "i_system.h"
 #include "i_sound.h"
-#include "i_video.h"
+// #include "i_video.h"
+#include "sdl_video.h"
 
 #include "g_game.h"
 
@@ -243,7 +244,7 @@ void D_Display(void)
     }
 
     // draw buffered stuff to screen
-    I_UpdateNoBlit();
+    // I_UpdateNoBlit(); // TODO: Reimplement
 
     // draw the view directly
     if (gamestate == GS_LEVEL && !automapactive && gametic) {
@@ -256,7 +257,8 @@ void D_Display(void)
 
     // clean up border stuff
     if (gamestate != oldgamestate && gamestate != GS_LEVEL) {
-        I_SetPalette(W_CacheLumpName("PLAYPAL", PU_CACHE));
+        // I_SetPalette(W_CacheLumpName("PLAYPAL", PU_CACHE)); // TODO: Reimplement
+        SDL_SetPalette(W_CacheLumpName("PLAYPAL", PU_CACHE));
     }
 
     // see if the border needs to be initially drawn
@@ -298,7 +300,8 @@ void D_Display(void)
 
     // normal update
     if (!wipe) {
-        I_FinishUpdate(); // page flip or blit buffer
+        // I_FinishUpdate(); // page flip or blit buffer // TODO: Reimplement
+        SDL_FinishUpdate();
         return;
     }
 
@@ -314,9 +317,11 @@ void D_Display(void)
         } while (!tics);
         wipestart = nowtime;
         done = wipe_ScreenWipe(wipe_Melt, 0, 0, SCREENWIDTH, SCREENHEIGHT, tics);
-        I_UpdateNoBlit();
+        // I_UpdateNoBlit(); // TODO: Reimplement
+        SDL_UpdateNoBlit();
         M_Drawer();       // menu is drawn even on top of wipes
-        I_FinishUpdate(); // page flip or blit buffer
+        // I_FinishUpdate(); // page flip or blit buffer // TODO: Reimplement
+        SDL_FinishUpdate();
     } while (!done);
 }
 
@@ -338,15 +343,18 @@ void D_DoomLoop(void)
         debugfile = fopen(filename, "w");
     }
 
-    I_InitGraphics();
+    //I_InitGraphics(); // TODO: Reimplement
+    SDL_InitGraphics();
 
     while (1) {
         // frame syncronous IO operations
-        I_StartFrame();
+        //I_StartFrame(); // TODO: Reimplement
+        SDL_StartFrame();
 
         // process one or more tics
         if (singletics) {
-            I_StartTic();
+            // I_StartTic(); // TODO: Reimplement
+            SDL_StartTic();
             D_ProcessEvents();
             G_BuildTiccmd(&netcmds[consoleplayer][maketic % BACKUPTICS]);
             if (advancedemo) {

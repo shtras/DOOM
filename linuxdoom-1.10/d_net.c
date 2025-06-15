@@ -24,7 +24,7 @@
 
 #include "m_menu.h"
 #include "i_system.h"
-#include "i_video.h"
+// #include "i_video.h"
 #include "i_net.h"
 #include "g_game.h"
 #include "doomdef.h"
@@ -382,7 +382,7 @@ void NetUpdate(void)
     // build new ticcmds for console player
     gameticdiv = gametic / ticdup;
     for (i = 0; i < newtics; i++) {
-        I_StartTic();
+        // I_StartTic(); // TODO: Reimplement
         D_ProcessEvents();
         if (maketic - gameticdiv >= BACKUPTICS / 2 - 1) {
             break; // can't hold any more
@@ -435,10 +435,10 @@ void CheckAbort(void)
 
     stoptic = I_GetTime() + 2;
     while (I_GetTime() < stoptic) {
-        I_StartTic();
+        // I_StartTic(); // TODO: Reimplement
     }
 
-    I_StartTic();
+    // I_StartTic(); // TODO: Reimplement
     for (; eventtail != eventhead; eventtail = (++eventtail) & (MAXEVENTS - 1)) {
         ev = &events[eventtail];
         if (ev->type == ev_keydown && ev->data1 == KEY_ESCAPE) {

@@ -42,7 +42,7 @@
 #include "w_wad.h"
 
 #include "i_system.h"
-#include "i_video.h"
+// #include "i_video.h"
 #include "v_video.h"
 
 #include "hu_stuff.h"
@@ -344,7 +344,7 @@ void M_LoadDefaults(void)
                         if (!isstring) {
                             *defaults[i].location = parm;
                         } else
-                            *defaults[i].location = (int*)newstring;
+                            *defaults[i].location = newstring;
                         break;
                     }
             }
@@ -448,7 +448,7 @@ void M_ScreenShot(void)
 
     // munge planar buffer to linear
     linear = screens[2];
-    I_ReadScreen(linear);
+    // I_ReadScreen(linear); // TODO: Reimplement
 
     // find a file name to save it to
     strcpy(lbmname, "DOOM00.pcx");

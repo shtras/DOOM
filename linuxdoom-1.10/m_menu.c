@@ -35,7 +35,7 @@
 #include "d_main.h"
 
 #include "i_system.h"
-#include "i_video.h"
+// #include "i_video.h"
 #include "z_zone.h"
 #include "v_video.h"
 #include "w_wad.h"
@@ -1272,7 +1272,7 @@ boolean M_Responder(event_t* ev)
                     usegamma = 0;
                 }
                 players[consoleplayer].message = gammamsg[usegamma];
-                I_SetPalette(W_CacheLumpName("PLAYPAL", PU_CACHE));
+                // I_SetPalette(W_CacheLumpName("PLAYPAL", PU_CACHE)); // TODO: Reimplement
                 return true;
         }
 

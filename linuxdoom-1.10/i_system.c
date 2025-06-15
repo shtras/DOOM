@@ -30,7 +30,7 @@
 
 #include "doomdef.h"
 #include "m_misc.h"
-#include "i_video.h"
+// #include "i_video.h"
 #include "i_sound.h"
 
 #include "d_net.h"
@@ -103,7 +103,7 @@ void I_Quit(void)
     I_ShutdownSound();
     I_ShutdownMusic();
     M_SaveDefaults();
-    I_ShutdownGraphics();
+    // I_ShutdownGraphics(); // TODO: Reimplement
     exit(0);
 }
 
@@ -161,7 +161,7 @@ void I_Error(char* error, ...)
     }
 
     D_QuitNetGame();
-    I_ShutdownGraphics();
+    // I_ShutdownGraphics(); // TODO: Reimplement
 
     exit(-1);
 }
