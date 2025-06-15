@@ -64,9 +64,9 @@ void I_SDL_StartFrame(void)
 
 int xlatekey(SDL_Event* sdl_event)
 {
-    int rc;
+    int rc = sdl_event->key.keysym.sym;
 
-    switch (sdl_event->key.keysym.sym) {
+    switch (rc) {
         case SDLK_LEFT:
             rc = KEY_LEFTARROW;
             break;
