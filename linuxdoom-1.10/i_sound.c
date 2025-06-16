@@ -46,6 +46,8 @@
 #include <time.h>
 #include <signal.h>
 
+#include <SDL2/SDL.h>
+
 #include "z_zone.h"
 
 #include "i_system.h"
@@ -99,13 +101,15 @@ static int flag = 0;
 int lengths[NUMSFX];
 
 // The actual output device.
-int audio_fd;
+// int audio_fd;
+SDL_AudioStream* stream;
 
 // The global mixing buffer.
 // Basically, samples from all active internal channels
 //  are modifed and added, and stored in the buffer
 //  that is submitted to the audio device.
 signed short mixbuffer[MIXBUFFERSIZE];
+int samplesToPlay;
 
 // The channel step amount...
 unsigned int channelstep[NUM_CHANNELS];
@@ -592,6 +596,24 @@ void I_UpdateSound(void)
 #endif
 }
 
+void my_audio_callback(void* userdata, Uint8* stream, int len)
+{
+    if (samplesToPlay <= 0) {
+        return;
+    }
+    if (len > samplesToPlay) {
+        len = samplesToPlay;
+    }
+    memset(stream, 0, len);
+    for (int i=0; i<SAMPLECOUNT*BUFMUL; ++i) {
+        ((byte*)mixbuffer)[i] /= 10;
+    }
+    memcpy(stream, (Uint8*)mixbuffer, samplesToPlay);
+    //SDL_MixAudio(stream, (Uint8*)mixbuffer, len, SDL_MIX_MAXVOLUME);
+    samplesToPlay = 0;
+    //samplesToPlay -= len;
+}
+
 //
 // This would be used to write out the mixbuffer
 //  during each game loop update.
@@ -603,7 +625,9 @@ void I_UpdateSound(void)
 void I_SubmitSound(void)
 {
     // Write it to DSP device.
-    write(audio_fd, mixbuffer, SAMPLECOUNT * BUFMUL);
+    //write(audio_fd, mixbuffer, SAMPLECOUNT * BUFMUL);
+    //
+    samplesToPlay = SAMPLECOUNT * BUFMUL;
 }
 
 void I_UpdateSoundParams(int handle, int vol, int sep, int pitch)
@@ -647,7 +671,7 @@ void I_ShutdownSound(void)
 #endif
 
     // Cleaning up -releasing the DSP device.
-    close(audio_fd);
+    //close(audio_fd);
 #endif
 
     // Done.
@@ -684,29 +708,41 @@ void I_InitSound()
     // Secure and configure sound device first.
     fprintf(stderr, "I_InitSound: ");
 
-    audio_fd = open("/dev/dsp", O_WRONLY);
-    if (audio_fd < 0) {
-        fprintf(stderr, "Could not open /dev/dsp\n");
+    if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+        I_Error("Could not initialize SDL audio: %s", SDL_GetError());
     }
+    static SDL_AudioSpec wav_spec;
+    wav_spec.callback = my_audio_callback;
+    wav_spec.userdata = NULL;
+    wav_spec.freq = SAMPLERATE;
+    wav_spec.format = AUDIO_U16LSB;
+    samplesToPlay = 0;
+    SDL_OpenAudio(&wav_spec, NULL);
+    SDL_PauseAudio(0);
 
-    i = 11 | (2 << 16);
-    myioctl(audio_fd, SNDCTL_DSP_SETFRAGMENT, &i);
-    myioctl(audio_fd, SNDCTL_DSP_RESET, 0);
+    // audio_fd = open("/dev/dsp", O_WRONLY);
+    // if (audio_fd < 0) {
+    //     fprintf(stderr, "Could not open /dev/dsp\n");
+    // }
 
-    i = SAMPLERATE;
+    // i = 11 | (2 << 16);
+    // myioctl(audio_fd, SNDCTL_DSP_SETFRAGMENT, &i);
+    // myioctl(audio_fd, SNDCTL_DSP_RESET, 0);
 
-    myioctl(audio_fd, SNDCTL_DSP_SPEED, &i);
+    //i = SAMPLERATE;
 
-    i = 1;
-    myioctl(audio_fd, SNDCTL_DSP_STEREO, &i);
+    // myioctl(audio_fd, SNDCTL_DSP_SPEED, &i);
 
-    myioctl(audio_fd, SNDCTL_DSP_GETFMTS, &i);
+    // i = 1;
+    // myioctl(audio_fd, SNDCTL_DSP_STEREO, &i);
 
-    if (i &= AFMT_S16_LE) {
-        myioctl(audio_fd, SNDCTL_DSP_SETFMT, &i);
-    } else {
-        fprintf(stderr, "Could not play signed 16 data\n");
-    }
+    // myioctl(audio_fd, SNDCTL_DSP_GETFMTS, &i);
+
+    // if (i &= AFMT_S16_LE) {
+    //     myioctl(audio_fd, SNDCTL_DSP_SETFMT, &i);
+    // } else {
+    //     fprintf(stderr, "Could not play signed 16 data\n");
+    // }
 
     fprintf(stderr, " configured audio device\n");
 
@@ -801,97 +837,4 @@ int I_QrySongPlaying(int handle)
     // UNUSED.
     handle = 0;
     return looping || musicdies > gametic;
-}
-
-//
-// Experimental stuff.
-// A Linux timer interrupt, for asynchronous
-//  sound output.
-// I ripped this out of the Timer class in
-//  our Difference Engine, including a few
-//  SUN remains...
-//
-#ifdef sun
-typedef sigset_t tSigSet;
-#else
-typedef int tSigSet;
-#endif
-
-// We might use SIGVTALRM and ITIMER_VIRTUAL, if the process
-//  time independend timer happens to get lost due to heavy load.
-// SIGALRM and ITIMER_REAL doesn't really work well.
-// There are issues with profiling as well.
-static int /*__itimer_which*/ itimer = ITIMER_REAL;
-
-static int sig = SIGALRM;
-
-// Interrupt handler.
-void I_HandleSoundTimer(int ignore)
-{
-    // Debug.
-    //fprintf( stderr, "%c", '+' ); fflush( stderr );
-
-    // Feed sound device if necesary.
-    if (flag) {
-        // See I_SubmitSound().
-        // Write it to DSP device.
-        write(audio_fd, mixbuffer, SAMPLECOUNT * BUFMUL);
-
-        // Reset flag counter.
-        flag = 0;
-    } else {
-        return;
-    }
-
-    // UNUSED, but required.
-    ignore = 0;
-    return;
-}
-
-// Get the interrupt. Set duration in millisecs.
-int I_SoundSetTimer(int duration_of_tick)
-{
-    // Needed for gametick clockwork.
-    struct itimerval value;
-    struct itimerval ovalue;
-    struct sigaction act;
-    struct sigaction oact;
-
-    int res;
-
-    // This sets to SA_ONESHOT and SA_NOMASK, thus we can not use it.
-    //     signal( _sig, handle_SIG_TICK );
-
-    // Now we have to change this attribute for repeated calls.
-    act.sa_handler = I_HandleSoundTimer;
-#ifndef sun
-    //ac	t.sa_mask = _sig;
-#endif
-    act.sa_flags = SA_RESTART;
-
-    sigaction(sig, &act, &oact);
-
-    value.it_interval.tv_sec = 0;
-    value.it_interval.tv_usec = duration_of_tick;
-    value.it_value.tv_sec = 0;
-    value.it_value.tv_usec = duration_of_tick;
-
-    // Error is -1.
-    res = setitimer(itimer, &value, &ovalue);
-
-    // Debug.
-    if (res == -1) {
-        fprintf(stderr, "I_SoundSetTimer: interrupt n.a.\n");
-    }
-
-    return res;
-}
-
-// Remove the interrupt. Set duration to zero.
-void I_SoundDelTimer()
-{
-    // Debug.
-    if (I_SoundSetTimer(0) == -1) {
-        fprintf(stderr, "I_SoundDelTimer: failed to remove interrupt. Doh!\n");
-    }
 }
